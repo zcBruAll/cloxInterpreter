@@ -1,4 +1,3 @@
-#include <cctype>
 #include <stdio.h>
 #include <string.h>
 
@@ -200,7 +199,7 @@ Token scanToken() {
     return makeToken(TOKEN_EOF);
 
   char c = advance();
-  if (isalpha(c))
+  if (isAlpha(c))
     return identifier();
   if (isDigit(c))
     return number();
