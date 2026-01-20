@@ -1,4 +1,8 @@
 var beverage = "cafe au lait";
 var breakfast = "beignets";
+{
+	var breakfast = "BREAKFAST!";
+	print breakfast;
+}
 breakfast = "beignets with " + beverage;
 print breakfast;
