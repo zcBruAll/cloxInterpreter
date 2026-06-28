@@ -1,20 +1,143 @@
-class Doughnut {
-  cook() {
-    print "Dunk in the fryer.";
-    this.finish("sprinkles");
+print "--- The Dungeon Encounter Begins ---";
+
+// =========================================
+// 1. Classes, Instances, and Methods
+// =========================================
+class Entity {
+  init(name, hp) {
+    this.name = name;
+    this.hp = hp;
   }
 
-  finish(ingredient) {
-    print "Finish with " + ingredient;
+  isAlive() {
+    return this.hp > 0;
+  }
+
+  takeDamage(amount) {
+    this.hp = this.hp - amount;
+    if (this.hp < 0) {
+      this.hp = 0;
+    }
+    print this.name + " takes damage!";
+    print "HP remaining:";
+    print this.hp;
   }
 }
 
-class Cruller < Doughnut {
-  finish(ingredient) {
-    // No sprinkles, always icing.
-    super.finish("icing");
+// =========================================
+// 2. Inheritance and the 'super' Keyword
+// =========================================
+class Hero < Entity {
+  init(name, hp, damage) {
+    super.init(name, hp);
+    this.damage = damage;
+  }
+
+  attack(target) {
+    print this.name + " swings a glowing sword at " + target.name + "!";
+    target.takeDamage(this.damage);
   }
 }
 
-Cruller().finish("sprinkles");
-Doughnut().cook();
+class Monster < Entity {
+  init(name, hp, damage, cry) {
+    super.init(name, hp);
+    this.damage = damage;
+    this.cry = cry;
+  }
+
+  taunt() {
+    print this.name + " roars:";
+    print this.cry;
+  }
+
+  attack(target) {
+    print this.name + " strikes " + target.name + " with terrifying fury!";
+    target.takeDamage(this.damage);
+  }
+}
+
+// =========================================
+// 3. Closures (Stateful Status Effects)
+// =========================================
+// This function returns a closure. The inner function captures and 
+// mutates 'turnsLeft' and 'damage', keeping state across multiple turns!
+fun createPoisonEffect(damage, duration) {
+  var turnsLeft = duration;
+  
+  fun tick(target) {
+    if (turnsLeft > 0) {
+      print "*** Poison courses through " + target.name + "'s veins... ***";
+      target.takeDamage(damage);
+      turnsLeft = turnsLeft - 1;
+      return true; // Effect is still active
+    }
+    return false; // Effect has expired
+  }
+  
+  return tick;
+}
+
+// =========================================
+// 4. Initialization and Native Functions
+// =========================================
+var start_time = clock();
+
+var hero = Hero("Arthur", 30, 8);
+var dragon = Monster("Smaug", 40, 6, "You are but dust in the wind!");
+
+print "";
+dragon.taunt();
+
+// Create the closure
+var smaugPoison = createPoisonEffect(3, 4); 
+var dragonIsPoisoned = true;
+
+// =========================================
+// 5. Control Flow and Loops (The Battle)
+// =========================================
+var turn = 1;
+
+while (hero.isAlive() and dragon.isAlive()) {
+  print "";
+  print "--- Turn ---";
+  print turn;
+  
+  hero.attack(dragon);
+  
+  if (dragon.isAlive()) {
+    dragon.attack(hero);
+    
+    if (dragonIsPoisoned) {
+      // Execute the closure to apply stateful damage
+      dragonIsPoisoned = smaugPoison(dragon);
+      
+      if (!dragonIsPoisoned) {
+         print "*** The poison has worn off. ***";
+      }
+    }
+  }
+  
+  // Implicit GC Stress Test: Generate temporary heap objects 
+  // to ensure your Mark-and-Sweep collector is working properly.
+  for (var i = 0; i < 50; i = i + 1) {
+     var garbage = "junk" + "string";
+  }
+
+  turn = turn + 1;
+}
+
+// =========================================
+// 6. Final State Evaluation
+// =========================================
+print "";
+print "--- Battle Concluded ---";
+if (hero.isAlive()) {
+  print hero.name + " stands victorious!";
+} else {
+  print hero.name + " has fallen...";
+}
+
+var end_time = clock();
+print "Seconds elapsed:";
+print end_time - start_time;
